@@ -7,6 +7,4 @@ def get_response(user_input: str):
         return "Speak you fool."
     elif "hello" in lowered:
         return "Greetings! (Winton)"
-    else:
-        return choice(["Bruh","Whaaat","You're an idiot"])
 
