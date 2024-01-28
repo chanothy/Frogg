@@ -46,4 +46,31 @@ class music_cog(commands.Cog):
             if self.vc == None or not self.vc.is_connected():
                 self.vc = await self.music_queue[0][1].connect()
                 if self.vc == None:
-                    await ctx.send("Frogg can't your dumb channel.")
+                    await ctx.send("Frogg can't join your channel.")
+                    return
+            else: 
+                await self.vc.move_to(self.music_queue[0][1])
+
+            self.music_queue.pop(0)
+            self.vc.play(discord.FFmpegPCMAudio(m_url, **self.FFMPEG_OPTIONS), after=lambda x: self.play_next())
+        else:
+            self.is_playing = False
+
+    
+    @commands.command(name="play",aliases=["p","playing","sing"], help="Play the selected song from Youtube")
+    async def play(self, ctx, *args):
+        query = " ".join(args)
+        voice_channel = ctx.author.voice_channel
+        if voice_channel is None:
+            await ctx.send("My brother in Christ, connect to a voice channel. NOW!")
+        elif self.is_paused:
+            self.vc.resume()
+        else: 
+            song = self.search_yt(query)
+            if type(song) == type(True):
+                await ctx.send("Could not download the song. Incorrect format, try a different keyword.")
+            else:
+                await ctx.send("Song added to the Froggy queue.")
+                self.music_queue.append([song, voice_channel])
+                if self.is_playing == False:
+                    await self.play_music(ctx)
