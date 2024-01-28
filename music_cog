@@ -23,10 +23,27 @@ class music_cog(commands.Cog):
         return {'source': info['formats'[0]['url']], 'title': info['title']}
     
     def play_next(self):
+        """
+        lambda used because after requires a function
+        recursive, continues playing while there exists a next in the queue
+        """
         if len(self.music_queue) > 0:
             self.is_playing = True
             m_url = self.music_queue[0][0]['source']
             self.music_queue.pop(0)
-            self.vc.play(discord.FFmpegAudio(m_url, **self.FFMPEG_OPTIONS) , after=lambda e: self.play_next())
+            self.vc.play(discord.FFmpegAudio(m_url, **self.FFMPEG_OPTIONS) , after=lambda x: self.play_next())
         else:
             self.is_playing = True
+
+    async def play_music(self, ctx):
+        """
+        ctx = context
+        """
+        if len(self.music_queue) > 0:
+            self.is_playing = True
+            m_url = self.music_queue[0][0]['source']
+
+            if self.vc == None or not self.vc.is_connected():
+                self.vc = await self.music_queue[0][1].connect()
+                if self.vc == None:
+                    await ctx.send("Frogg can't your dumb channel.")
